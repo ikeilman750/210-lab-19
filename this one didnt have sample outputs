@@ -1,0 +1,87 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+struct Review {
+    double rating;
+    string comments;
+    Review* next;
+};
+
+class Movie {
+private:
+    string title;
+    Review* head;
+
+public:
+    Movie( const string& title) : title(title), head(nullptr) {}
+
+    void addReviewToHead(const string& comments, double rating) {
+        Review* newReview = new Review;
+        newReview->rating = rating;
+        newReview->comments = comments ;
+        newReview->next = head;
+        head= newReview;
+    }
+
+    void loadReviewsFromFile(const string& filename) {
+        ifstream file(filename);
+        string comment;
+        while (getline(file, comment)) {
+            double rating =  generateRandomRating();  
+            addReviewToHead(comment, rating);
+        }
+        file.close();
+
+
+    }
+
+    void displayReviews() const {
+        cout << "Movie: " << title << endl;
+        Review* current = head;
+        int count = 1;
+
+        while (current) {
+            cout << "    Review #" << count++ << ": " << current->rating << " - " << current->comments << endl;
+            current = current->next;
+        }
+    }
+
+    static double generateRandomRating() {
+        return (rand() % 41 + 10) /  10.0;
+    }
+
+    ~Movie() {
+        Review* current = head;
+        while (current) {
+            Review* next =  current->next;
+            delete current;
+            current = next;
+        }
+    }
+};
+
+int main() {
+    srand(time(0));
+
+    vector<Movie> movies;
+
+    Movie movie1("hi");
+    movie1.loadReviewsFromFile("reviews_inception.txt");
+    movies.push_back( movie1);
+
+    Movie movie2 ("hello");
+    movie2.loadReviewsFromFile("reviews_matrix.txt");
+    movies.push_back(movie2) ;
+
+    for (const Movie& movie :   movies) {
+        movie.displayReviews();
+        cout <<endl;
+    }
+
+    return 0;
+}
